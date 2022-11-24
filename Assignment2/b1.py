@@ -1,4 +1,3 @@
-from doctest import NORMALIZE_WHITESPACE
 import cv2
 import time
 import numpy as np
@@ -13,13 +12,15 @@ find_reddest = False
 t0 = time.time()
 
 #cap = cv2.VideoCapture("http://192.168.42.160:8080/video")
-#cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 ret = True
-frame = cv2.imread("frame.bmp")
+frame = cv2.imread("frame.jpg")
+
+frame = cv2.resize(frame[:4000, :], (480, 640))
 
 while True:
-    #ret, frame = cap.read()
+    ret, frame = cap.read()
     if not ret:
         print("No frame!")
         break
@@ -53,7 +54,7 @@ while True:
             y0 = b * rho
             pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
             pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-            cv2.line(colored_canny, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+            cv2.line(colored_canny, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
             cv2.line(test, pt1, pt2, 0, 3, cv2.LINE_AA)
     cv2.imshow("Hough", colored_canny)
     
@@ -91,21 +92,23 @@ while True:
     corners = np.float32(approx)
     
     new_corners = np.array([
-        [600, 0],
         [0, 0],
         [0, 400],
         [600, 400],
+        [600, 0],
     ], np.float32)
 
     print(corners, new_corners)
-    M = cv2.getPerspectiveTransform(corners, new_corners)
-    document = cv2.warpPerspective(frame, M, (600, 400))
+    if len(corners) == 4:
+
+        M = cv2.getPerspectiveTransform(corners, new_corners)
+        document = cv2.warpPerspective(frame, M, (600, 400))
+        cv2.imshow("document", document)
 
     t1 = time.time()
 
     print(f"{1/(t1-t0+0.0000001):.1f} FPS")
 
-    cv2.imshow("document", document)
 
     cv2.imshow("test", test)
     
@@ -113,7 +116,7 @@ while True:
     
     cv2.imshow("Frame", frame)
     
-    k = cv2.waitKey() & 0xFF
+    k = cv2.waitKey(10) & 0xFF
     if k == 27:
         break
     if k == ord('f'):
@@ -131,4 +134,4 @@ while True:
         cv2.imwrite("frame.bmp", frame)
     elif k != 255:
         maximum_strategy = False
-    break
+

@@ -1,0 +1,18 @@
+
+The processing time, reading and displaying one image is to small to be properly detected by python's built in time measurements.
+
+
+Adding the bright spot detection slows down the processing.
+The double for loop slows it all the way down to 10 FPS.
+However by using either Numpy's argmax or opencv's MinMaxLoc functions brings
+the processing time back down into non measureable levels.
+
+
+The latency is very little when using the built in web camera on the laptop being used.
+However when using an Android phone to act as a hotspot and IP camera things get a lot worse.
+
+When running the for loop to find the bright spot,
+python isn't quick enough to request the next frame that the frames just
+build up in a buffer somewhere and the latency gets worse and worse.
+
+However when python is quick enough the latency feels like approximately one second.

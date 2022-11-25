@@ -1,7 +1,8 @@
 import random
 import numpy as np
 
-def ransac(points, e, threshold=0.15, max_iter=30):
+
+def ransac(points, e, threshold=0.15, max_iter=60):
     """
     Uses ransac to find the most prominent line,
 
@@ -53,30 +54,40 @@ if __name__ == '__main__':
     frame = cv2.imread("frame.jpg")
 
     frame = cv2.resize(frame[:4000, :], (480, 640))
-    t0 = time.time()
-    blurred = cv2.GaussianBlur(frame, (15, 15), 0)
-    medianed = cv2.medianBlur(blurred, 9)
-    gray = cv2.cvtColor(medianed, cv2.COLOR_BGR2GRAY)
+    cap = cv2.VideoCapture(0)
 
-    cv2.imshow("gray", gray)
-    canny = cv2.Canny(gray, 50, 200)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("No frame!")
+            break
+        t0 = time.time()
+        blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+        medianed = cv2.medianBlur(frame, 9)
+        gray = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
 
-    cv2.imshow("Canny", canny)
+        cv2.imshow("gray", gray)
+        canny = cv2.Canny(gray, 50, 200)
 
-    points = np.argwhere(canny)
+        cv2.imshow("Canny", canny)
 
-    colored_canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2BGR)
-    for i in range(4):
+        points = np.argwhere(canny)
 
-        line, inliers = ransac(points, 4)
+        colored_canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2BGR)
+        if len(points) > 25:
+            for i in range(4):
+                if len(points) < 4:
+                    break
+                line, inliers = ransac(points, 4)
+                if not line:
+                    break
+                cv2.line(colored_canny, tu((0, int(line[1]))), tu((1000, int(1000*line[0] + line[1]))), (0, 255, 0), 3)
+                # print(len(points), len(inliers))
 
-        cv2.line(colored_canny, tu((0, int(line[1]))), tu((1000, int(1000*line[0] + line[1]))), (0, 255, 0), 3)
-        print(len(points), len(inliers))
+                points = np.delete(points, inliers, 0)
+                # print(len(points))
+        cv2.imshow("ransac", colored_canny)
 
-        points = np.delete(points, inliers, 0)
-        print(len(points))
-    cv2.imshow("ransac", colored_canny)
-
-    cv2.waitKey()
-
-    print(line, len(inliers))
+        k = cv2.waitKey(10) & 0xFF
+        if k == 27:
+            break

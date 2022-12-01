@@ -3,6 +3,7 @@ import cv2
 import time
 from names import coco_names
 import numpy as np
+import threading
 min_conf = 0.3
 abs_conf = 0.8
 n_conf = 3
@@ -71,7 +72,27 @@ def add_predictions(img):
 # cv2.waitKey()
 
 
-cap = cv2.VideoCapture(0)
+class VideoCapture:
+
+    def __init__(self, name):
+        self.cap = cv2.VideoCapture(name)
+        self.t = threading.Thread(target=self._reader)
+        self.t.daemon = True
+        self.t.start()
+
+    # grab frames as soon as they are available
+    def _reader(self):
+        while True:
+            ret = self.cap.grab()
+            if not ret:
+                break
+
+    # retrieve latest frame
+    def read(self):
+        ret, frame = self.cap.retrieve()
+        return ret, frame
+
+cap = VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
@@ -82,7 +103,7 @@ while True:
     img = add_predictions(frame)
     t1 = time.time()
     print(f"{1/(t1-t0)} FPS")
-    cv2.imshow("yolo", img)
+    cv2.imshow("yolo tiny", img)
     k = cv2.waitKey(10) & 0xFF
     if k == 27:
         break

@@ -107,7 +107,7 @@ while True:
     img = add_predictions(frame)
     t1 = time.time()
     print(f"{1/(t1-t0)} FPS")
-    cv2.imshow("yolo", img)
+    cv2.imshow("yolo 608", img)
     k = cv2.waitKey(10) & 0xFF
     if k == 27:
         break

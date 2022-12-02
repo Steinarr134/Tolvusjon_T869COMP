@@ -18,7 +18,7 @@ while True:
         if not ret:
             continue
 
-        imgname = datetime.now().strftime("%Y-%m-%d %H_%M_%S.jpg")
+        imgname = datetime.now().strftime("/mnt/usb1/RU_Parking/%Y-%m-%d %H_%M_%S.jpg")
 
         cv2.imwrite(imgname, img)
         cv2.imshow(imgname, img)
